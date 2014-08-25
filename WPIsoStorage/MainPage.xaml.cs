@@ -17,7 +17,7 @@ namespace WPIsoStorage
         public MainPage()
         {
             InitializeComponent();
-
+            DataContext = App.ViewModel;
             // Sample code to localize the ApplicationBar
             //BuildLocalizedApplicationBar();
         }
@@ -37,5 +37,31 @@ namespace WPIsoStorage
         //    ApplicationBarMenuItem appBarMenuItem = new ApplicationBarMenuItem(AppResources.AppBarMenuItemText);
         //    ApplicationBar.MenuItems.Add(appBarMenuItem);
         //}
+        private void RemoveUser(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null && button.CommandParameter != null)
+            {
+                var id = (Guid)button.CommandParameter;
+                var users = App.ViewModel.Users;
+                var tempUser = users.Single(u => u.Id != id);
+                users.Remove(tempUser);
+            }
+        }
+
+
+        private void AddUser(object sender, RoutedEventArgs e)
+        {
+            var user = new User();
+            user.Id = Guid.NewGuid();
+            user.Name = "User - " + (App.ViewModel.Users.Count + 1);
+            user.AddedOn = DateTime.Now;
+            App.ViewModel.Users.Add(user);
+        }
+
+        private void RemoveAll(object sender, RoutedEventArgs e)
+        {
+            App.ViewModel.Users.Clear();
+        }
     }
 }

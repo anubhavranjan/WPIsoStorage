@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO.IsolatedStorage;
 using System.Resources;
 using System.Windows;
 using System.Windows.Markup;
@@ -12,6 +15,9 @@ namespace WPIsoStorage
 {
     public partial class App : Application
     {
+        private static MainViewModel viewModel = null;
+        public static ObservableCollection<User> Users = null; 
+        private static IsolatedStorageSettings userSettings = IsolatedStorageSettings.ApplicationSettings;
         /// <summary>
         /// Provides easy access to the root frame of the Phone Application.
         /// </summary>
@@ -61,24 +67,28 @@ namespace WPIsoStorage
         // This code will not execute when the application is reactivated
         private void Application_Launching(object sender, LaunchingEventArgs e)
         {
+            GetSettingsFromIsolatedSettings();
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
         private void Application_Activated(object sender, ActivatedEventArgs e)
         {
+            GetSettingsFromIsolatedSettings();
         }
 
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
         private void Application_Deactivated(object sender, DeactivatedEventArgs e)
         {
+            StoreSettingsToIsolatedSettings();
         }
 
         // Code to execute when the application is closing (eg, user hit Back)
         // This code will not execute when the application is deactivated
         private void Application_Closing(object sender, ClosingEventArgs e)
         {
+            StoreSettingsToIsolatedSettings();
         }
 
         // Code to execute if a navigation fails
@@ -218,6 +228,44 @@ namespace WPIsoStorage
 
                 throw;
             }
+        }
+
+        /// <summary>
+        /// A static ViewModel used by the views to bind against.
+        /// </summary>
+        /// <returns>The MainViewModel object.</returns>
+        public static MainViewModel ViewModel
+        {
+            get
+            {
+                // Delay creation of the view model until necessary
+                return viewModel ?? (viewModel = new MainViewModel());
+            }
+        }
+
+        private void GetSettingsFromIsolatedSettings()
+        {
+            try
+            {
+                if (userSettings.Count <= 0) return;
+                ViewModel.Users = userSettings["Users"] as ObservableCollection<User>;
+            }
+            catch (Exception ex) { }
+        }
+
+        private void StoreSettingsToIsolatedSettings()
+        {
+            try
+            {
+                userSettings.Clear();
+                userSettings["Users"] = ViewModel.Users;
+                userSettings.Save();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
         }
     }
 }
