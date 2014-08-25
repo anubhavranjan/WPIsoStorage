@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Collections.ObjectModel;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 
@@ -25,6 +17,9 @@ namespace WPStorageRT
     /// </summary>
     public sealed partial class App : Application
     {
+        private static MainViewModel viewModel = null;
+        public static ObservableCollection<User> Users = null;
+        private static ApplicationDataContainer userSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         private TransitionCollection transitions;
 
         /// <summary>
@@ -95,6 +90,7 @@ namespace WPStorageRT
                 {
                     throw new Exception("Failed to create initial page");
                 }
+                GetSettingsFromIsolatedSettings();
             }
 
             // Ensure the current window is active
@@ -123,9 +119,47 @@ namespace WPStorageRT
         private void OnSuspending(object sender, SuspendingEventArgs e)
         {
             var deferral = e.SuspendingOperation.GetDeferral();
-
+            StoreSettingsToIsolatedSettings();
             // TODO: Save application state and stop any background activity
             deferral.Complete();
+        }
+
+        /// <summary>
+        /// A static ViewModel used by the views to bind against.
+        /// </summary>
+        /// <returns>The MainViewModel object.</returns>
+        public static MainViewModel ViewModel
+        {
+            get
+            {
+                // Delay creation of the view model until necessary
+                return viewModel ?? (viewModel = new MainViewModel());
+            }
+        }
+
+
+        private void GetSettingsFromIsolatedSettings()
+        {
+            try
+            {
+                if (userSettings.Values.Count <= 0) return;
+                ViewModel.Users = userSettings.Values.ContainsKey("Users")? userSettings.Values["Users"] as ObservableCollection<User> : new ObservableCollection<User>();
+            }
+            catch (Exception ex) { }
+        }
+
+        private void StoreSettingsToIsolatedSettings()
+        {
+            try
+            {
+                userSettings.Values.Clear();
+                userSettings.Values["Users"] = ViewModel.Users;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
         }
     }
 }

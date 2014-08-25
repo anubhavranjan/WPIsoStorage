@@ -44,8 +44,12 @@ namespace WPIsoStorage
             {
                 var id = (Guid)button.CommandParameter;
                 var users = App.ViewModel.Users;
-                var tempUser = users.Single(u => u.Id != id);
-                users.Remove(tempUser);
+                var tempUser = users.SingleOrDefault(u => u.Id == id);
+                if (tempUser != null)
+                {
+                    users.Remove(tempUser);    
+                }
+                
             }
         }
 

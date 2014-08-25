@@ -27,6 +27,7 @@ namespace WPStorageRT
             this.InitializeComponent();
 
             this.NavigationCacheMode = NavigationCacheMode.Required;
+            DataContext = App.ViewModel;
         }
 
         /// <summary>
@@ -43,6 +44,37 @@ namespace WPStorageRT
             // Windows.Phone.UI.Input.HardwareButtons.BackPressed event.
             // If you are using the NavigationHelper provided by some templates,
             // this event is handled for you.
+        }
+
+        private void RemoveUser(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button != null && button.CommandParameter != null)
+            {
+                var id = (Guid)button.CommandParameter;
+                var users = App.ViewModel.Users;
+                var tempUser = users.SingleOrDefault(u => u.Id == id);
+                if (tempUser != null)
+                {
+                    users.Remove(tempUser);
+                }
+
+            }
+        }
+
+
+        private void AddUser(object sender, RoutedEventArgs e)
+        {
+            var user = new User();
+            user.Id = Guid.NewGuid();
+            user.Name = "User - " + (App.ViewModel.Users.Count + 1);
+            user.AddedOn = DateTime.Now;
+            App.ViewModel.Users.Add(user);
+        }
+
+        private void RemoveAll(object sender, RoutedEventArgs e)
+        {
+            App.ViewModel.Users.Clear();
         }
     }
 }
